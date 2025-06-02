@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>XCNN开发者平台 (安卓版)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* 移除安卓点击高亮 */
+        }
+
+        :root {
+            --primary-color: #1890ff;
+            --secondary-color: #e6f7ff;
+            --text-color: #333;
+            --text-secondary: #666;
+            --text-light: #999;
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --border-color: #eee;
+            --shadow-color: rgba(0,0,0,0.05);
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --error-color: #f5222d;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            margin: 0 auto;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            font-size: 15px; /* 稍微增大基础字体 */
+            line-height: 1.6; /* 增加行高 */
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            background-color: var(--primary-color);
+            color: white;
+            height: 28px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        /* 头部导航 */
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            height: 56px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            position: relative;
+            z-index: 100;
+        }
+
+        .header .title {
+            font-size: 18px;
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+        }
+
+        .header .back-icon {
+            font-size: 22px; /* 增大图标 */
+            width: 44px; /* 增大触控区域 */
+            height: 44px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .header .action-icon {
+            font-size: 22px; /* 增大图标 */
+            width: 44px; /* 增大触控区域 */
+            height: 44px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* 主要内容 */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            background-color: var(--bg-color);
+            padding-bottom: 65px; /* 为底部导航留出空间 */
+            -webkit-overflow-scrolling: touch; /* 优化滚动 */
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px; /* 增加高度 */
+            background-color: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 10px var(--shadow-color);
+            z-index: 100;
+        }
+
+        .bottom-nav .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            height: 100%;
+            color: var(--text-light);
+            font-size: 13px; /* 调整字体 */
+            transition: color 0.3s;
+            cursor: pointer;
+            padding: 5px 0; /* 增加垂直内边距 */
+        }
+
+        .bottom-nav .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .bottom-nav .nav-item .icon {
+            font-size: 26px; /* 增大图标 */
+            margin-bottom: 5px;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            margin: 16px;
+            overflow: hidden;
+        }
+
+        .card-title {
+            font-size: 17px; /* 增大字体 */
+            font-weight: bold;
+            padding: 18px; /* 增大内边距 */
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-content {
+            padding: 18px; /* 增大内边距 */
+        }
+
+        /* 按钮样式 */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px; /* 增大内边距 */
+            font-size: 15px; /* 增大字体 */
+            cursor: pointer;
+            transition: background-color 0.3s;
+            min-height: 44px; /* 最小高度 */
+            display: inline-flex; /* 垂直居中 */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background-color: #40a9ff;
+        }
+
+        .btn.secondary {
+            background-color: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .btn.secondary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* 标签页样式 */
+        .tabs {
+            display: flex;
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* 优化滚动 */
+        }
+
+        .tab {
+            padding: 18px; /* 增大内边距 */
+            font-size: 15px; /* 增大字体 */
+            color: var(--text-secondary);
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 18px;
+            right: 18px;
+            height: 3px; /* 加粗下划线 */
+            background-color: var(--primary-color);
+        }
+
+        /* 标签样式 */
+        .tag {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            padding: 5px 10px; /* 增大内边距 */
+            border-radius: 4px;
+            font-size: 13px; /* 调整字体 */
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        /* 首页样式 */
+        .home-container {
+            padding: 16px;
+        }
+
+        .home-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .home-card-header {
+            padding: 18px; /* 增大内边距 */
+        }
+
+        .home-card-title {
+            font-size: 19px; /* 增大字体 */
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .home-card-subtitle {
+            font-size: 15px; /* 增大字体 */
+            color: var(--text-secondary);
+        }
+
+        .home-card-content {
+            padding: 18px; /* 增大内边距 */
+        }
+
+        .home-card-stats {
+            display: flex;
+            margin-bottom: 16px;
+            justify-content: center;
+        }
+
+        .home-card-stat {
+            flex: 1;
+            text-align: center;
+        }
+
+        .home-card-stat-value {
+            font-size: 26px; /* 增大字体 */
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .home-card-stat-label {
+            font-size: 13px; /* 调整字体 */
+            color: var(--text-secondary);
+        }
+
+        .home-card-info {
+            font-size: 15px; /* 增大字体 */
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .home-card-tags {
+            margin-bottom: 16px;
+        }
+
+        .home-card-footer {
+            display: flex;
+            justify-content: flex-end;
+            padding: 14px 18px; /* 调整内边距 */
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* 模型市场样式 */
+        .model-categories {
+            display: flex;
+            overflow-x: auto;
+            background-color: white;
+            padding: 14px 18px; /* 调整内边距 */
+            border-bottom: 1px solid var(--border-color);
+            -webkit-overflow-scrolling: touch; /* 优化滚动 */
+        }
+
+        .model-category {
+            font-size: 15px; /* 增大字体 */
+            color: var(--text-secondary);
+            padding: 10px 18px; /* 增大内边距 */
+            border-radius: 18px;
+            margin-right: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.3s;
+        }
+
+        .model-category.active {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .model-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            padding: 18px; /* 增大内边距 */
+        }
+
+        .model-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .model-card-image {
+            height: 140px;
+            background-color: var(--secondary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .model-card-title {
+            font-size: 17px; /* 增大字体 */
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .model-card-desc {
+            font-size: 15px; /* 增大字体 */
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .model-card-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px; /* 调整字体 */
+            color: var(--text-light);
+        }
+
+        /* 模型详情页样式 */
+        .model-detail-header {
+            height: 200px;
+            background-color: #000;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .model-detail-content {
+            padding: 20px;
+        }
+
+        .model-detail-title {
+            font-size: 22px; /* 增大字体 */
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .model-detail-tags {
+            margin-bottom: 20px;
+        }
+
+        .model-detail-section {
+            margin-bottom: 24px;
+        }
+
+        .model-detail-section-title {
+            font-size: 17px; /* 增大字体 */
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .model-detail-metrics {
+            display: flex;
+            margin-bottom: 16px;
+        }
+
+        .model-detail-metric {
+            flex: 1;
+            text-align: center;
+            padding: 14px; /* 调整内边距 */
+            border-radius: 8px;
+            background-color: var(--secondary-color);
+            margin-right: 12px;
+        }
+
+        .model-detail-metric:last-child {
+            margin-right: 0;
+        }
+
+        .model-detail-metric-value {
+            font-size: 22px; /* 增大字体 */
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .model-detail-metric-label {
+            font-size: 13px; /* 调整字体 */
+            color: var(--text-secondary);
+        }
+
+        /* 测试页面样式 */
+        .test-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .test-preview {
+            flex: 1;
+            background-color: #000;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            min-height: 300px;
+        }
+
+        .test-controls {
+            background-color: white;
+            padding: 18px; /* 增大内边距 */
+        }
+
+        .test-section {
+            margin-bottom: 24px;
+        }
+
+        .test-section-title {
+            font-size: 17px; /* 增大字体 */
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+
+        .test-status {
+            display: flex;
+            align-items: center;
+            padding: 14px; /* 增大内边距 */
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .test-status-icon {
+            font-size: 22px; /* 增大图标 */
+            margin-right: 12px;
+        }
+
+        .test-status.success {
+            background-color: rgba(82, 196, 26, 0.1);
+            color: var(--success-color);
+        }
+
+        .test-status.warning {
+            background-color: rgba(250, 173, 20, 0.1);
+            color: var(--warning-color);
+        }
+
+        .test-status.info {
+            background-color: rgba(24, 144, 255, 0.1);
+            color: var(--primary-color);
+        }
+
+        /* 训练管理页样式 */
+        .training-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .training-option {
+            background-color: var(--secondary-color);
+            border-radius: 12px;
+            padding: 18px; /* 增大内边距 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .training-option-icon {
+            font-size: 40px; /* 增大图标 */
+            margin-bottom: 12px;
+            color: var(--primary-color);
+        }
+
+        .training-option-title {
+            font-size: 17px; /* 增大字体 */
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .training-option-desc {
+            font-size: 15px; /* 增大字体 */
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        /* 大模型对话页样式 */
+        .chat-container {
+            display: flex;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .chat-sidebar {
+            width: 100%;
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 18px; /* 增大内边距 */
+            max-height: 200px; /* 限制侧边栏高度 */
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chat-history-item {
+            padding: 14px; /* 增大内边距 */
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .chat-history-item:hover {
+            background-color: var(--bg-color);
+        }
+
+        .chat-history-time {
+            font-size: 13px; /* 调整字体 */
+            color: var(--text-light);
+        }
+
+        .chat-history-title {
+            font-size: 15px; /* 增大字体 */
+            margin-top: 4px;
+        }
+
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-color);
+        }
+
+        .chat-header {
+            padding: 18px; /* 增大内边距 */
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-model-info {
+            font-size: 15px; /* 增大字体 */
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 18px; /* 增大内边距 */
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* 优化滚动 */
+        }
+
+        .chat-message {
+            margin-bottom: 18px; /* 增大间距 */
+            max-width: 85%; /* 调整宽度 */
+        }
+
+        .chat-message.user {
+            margin-left: auto;
+        }
+
+        .chat-message.bot {
+            margin-right: auto;
+        }
+
+        .chat-message-content {
+            padding: 14px; /* 增大内边距 */
+            border-radius: 14px;
+            font-size: 15px; /* 增大字体 */
+            line-height: 1.6;
+        }
+
+        .chat-message.user .chat-message-content {
+            background-color: var(--primary-color);
+            color: white;
+            border-top-right-radius: 0;
+        }
+
+        .chat-message.bot .chat-message-content {
+            background-color: white;
+            border-top-left-radius: 0;
+        }
+
+        .chat-message-time {
+            font-size: 13px; /* 调整字体 */
+            color: var(--text-light);
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .chat-input {
+            padding: 18px; /* 增大内边距 */
+            background-color: white;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 14px; /* 增大内边距 */
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            font-size: 15px; /* 增大字体 */
+            margin-right: 12px;
+            min-height: 44px; /* 最小高度 */
+        }
+
+        .chat-input button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 44px; /* 增大按钮 */
+            height: 44px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 20px; /* 增大图标 */
+        }
+
+        /* 反馈页面样式 */
+        .feedback-container {
+            padding: 16px;
+        }
+
+        .feedback-table-container {
+            overflow-x: auto; /* 允许表格水平滚动 */
+            -webkit-overflow-scrolling: touch; /* 优化滚动 */
+            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 8px;
+        }
+
+        .feedback-table {
+            width: 100%;
+            min-width: 600px; /* 确保表格内容不换行 */
+            border-collapse: collapse;
+        }
+
+        .feedback-table th,
+        .feedback-table td {
+            border: 1px solid var(--border-color);
+            padding: 14px; /* 增大内边距 */
+            text-align: left;
+            white-space: nowrap; /* 防止换行 */
+        }
+
+        .feedback-table th {
+            background-color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        .feedback-table tr:nth-child(even) {
+            background-color: var(--bg-color);
+        }
+
+        .feedback-chart {
+            background-color: var(--secondary-color);
+            height: 200px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-secondary);
+        }
+
+        /* 通用工具类 */
+        .mt-16 {
+            margin-top: 16px;
+        }
+
+        .mb-16 {
+            margin-bottom: 16px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* 动画 */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Section控制 */
+        .section {
+            display: none;
+            width: 100%;
+            height: 100%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* 响应式设计 - 移除桌面和平板的特定样式，专注于移动端 */
+        /* @media (min-width: 768px) { ... } */
+        /* @media (min-width: 1024px) { ... } */
+        /* @media (min-width: 1440px) { ... } */
+
+    </style>
+</head>
+<body>
+    <!-- 状态栏 -->
+    <div class="status-bar">
+        <div>17:21</div>
+        <div>
+            <span>📶</span>
+            <span>🔋</span>
+            <span>⚙️</span>
+        </div>
+    </div>
+
+    <!-- 头部导航 -->
+    <div class="header">
+        <div class="back-icon" id="back-button">◀</div>
+        <div class="title" id="page-title">XCNN开发者平台</div>
+        <div class="action-icon">💬</div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="main-content">
+        <!-- 首页 Section -->
+        <section id="section-home" class="section active">
+            <div class="home-container">
+                <div class="home-card">
+                    <div class="home-card-header">
+                        <div class="home-card-title">模型市场</div>
+                        <div class="home-card-subtitle">浏览和使用优化的AI模型</div>
+                    </div>
+                    <div class="home-card-content">
+                        <div class="home-card-stats">
+                            <div class="home-card-stat">
+                                <div class="home-card-stat-value">28个</div>
+                                <div class="home-card-stat-label">已发布模型</div>
+                            </div>
+                        </div>
+                        <div class="home-card-info">
+                            最新优化模型支持MTK 9300/H0871芯片组，推理速度提升30%
+                        </div>
+                        <div class="home-card-tags">
+                            <span class="tag">MTK 9300</span>
+                            <span class="tag">MTK H0871</span>
+                            <span class="tag">高通骁龙8系列</span>
+                        </div>
+                    </div>
+                    <div class="home-card-footer">
+                        <button class="btn" onclick="switchSection('section-model-market')">进入模型市场</button>
+                    </div>
+                </div>
+
+                <div class="home-card">
+                    <div class="home-card-header">
+                        <div class="home-card-title">大模型推理</div>
+                        <div class="home-card-subtitle">本地部署</div>
+                    </div>
+                    <div class="home-card-content">
+                        <div class="home-card-info">
+                            QWen2.5-7B / QWen2.5-1.8B 大语言模型，支持多轮对话
+                        </div>
+                        <div class="home-card-tags">
+                            <span class="tag">MTK 9300</span>
+                            <span class="tag">高通骁龙8系列</span>
+                        </div>
+                    </div>
+                    <div class="home-card-footer">
+                        <button class="btn" onclick="switchSection('section-chat')">开始对话</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 模型市场 Section -->
+        <section id="section-model-market" class="section">
+            <div class="text-center mb-16 mt-16">
+                <h2>模型应用分类</h2>
+                <p>已发布28个模型，覆盖多种应用场景，支持复杂AI任务</p>
+            </div>
+
+            <div class="model-grid">
+                <!-- 目标检测卡片 -->
+                <div class="model-card" onclick="switchSection('section-model-category', '目标检测')">
+                    <div class="model-card-image">🔍</div>
+                    <div class="model-card-title">目标检测</div>
+                    <div class="model-card-desc">12个模型</div>
+                    <div class="model-card-desc">
+                        目标检测模型可识别图像中多个物体的位置和类别，提供边界框坐标和置信度分数。该类模型平均精度达到98%以上，广泛应用于工业、安防、零售等领域。
+                    </div>
+                    <div class="home-card-tags">
+                        <span class="tag">MTK 9300</span>
+                        <span class="tag">MTK H0871</span>
+                        <span class="tag">高通骁龙8系列</span>
+                    </div>
+                </div>
+
+                <!-- 图像分类卡片 -->
+                <div class="model-card" onclick="switchSection('section-model-category', '图像分类')">
+                    <div class="model-card-image">🖼️</div>
+                    <div class="model-card-title">图像分类</div>
+                    <div class="model-card-desc">8个模型</div>
+                    <div class="model-card-desc">
+                        图像分类模型为整张图片分配一个类别标签，是计算机视觉中最基础的任务之一。我们的轻量级分类模型推理时间小于10ms，适合实时应用场景，精度达到99%。
+                    </div>
+                    <div class="home-card-tags">
+                        <span class="tag">MTK 9300</span>
+                        <span class="tag">MTK H0871</span>
+                        <span class="tag">CPU/GPU通用</span>
+                    </div>
+                </div>
+
+                <!-- 姿态估计卡片 -->
+                <div class="model-card" onclick="switchSection('section-model-category', '姿态估计')">
+                    <div class="model-card-image">👤</div>
+                    <div class="model-card-title">姿态估计</div>
+                    <div class="model-card-desc">5个模型</div>
+                    <div class="model-card-desc">
+                        姿态估计模型能够检测人体/物体的关键点位置，追踪运动轨迹。我们的模型支持多人场景，能够在移动设备上实时运行，平均精度达到96%，关键点抖动小于2像素。
+                    </div>
+                    <div class="home-card-tags">
+                        <span class="tag">MTK 9300</span>
+                        <span class="tag">高通骁龙8系列</span>
+                        <span class="tag">NPU加速</span>
+                    </div>
+                </div>
+
+                <!-- 有无多检测卡片 -->
+                <div class="model-card" onclick="switchSection('section-model-category', '有无多检测')">
+                    <div class="model-card-image">↔️</div>
+                    <div class="model-card-title">有无多检测</div>
+                    <div class="model-card-desc">3个模型</div>
+                    <div class="model-card-desc">
+                        有无多检测模型专注于快速判断特定物体是否存在及其数量，是工业流水线检测的理想选择。该类模型体积小（<5MB），推理速度极快（<5ms），适合资源受限设备。
+                    </div>
+                    <div class="home-card-tags">
+                        <span class="tag">MTK 9300</span>
+                        <span class="tag">MTK H0871</span>
+                        <span class="tag">CPU</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 模型分类 Section -->
+        <section id="section-model-category" class="section">
+            <div class="tabs">
+                <div class="tab active">全部</div>
+                <div class="tab">轻量级</div>
+                <div class="tab">高精度</div>
+                <div class="tab">实时性</div>
+                <div class="tab">MTK优化</div>
+            </div>
+
+            <div class="mt-16 mb-16 text-center">
+                <h2 id="category-title">目标检测模型</h2>
+            </div>
+
+            <div class="model-grid">
+                <!-- 螺母识别模型 -->
+                <div class="model-card" onclick="switchSection('section-model-detail', 'YOLOv5s')">
+                    <div class="model-card-image">🔍</div>
+                    <div class="model-card-title">螺母识别模型</div>
+                    <div class="model-card-desc">
+                        算法中心训练的工业螺母检测模型，支持多种规格螺母识别
+                    </div>
+                    <div class="model-card-info">
+                        <span>发布时间: 2025-04-20</span>
+                        <span class="tag">MTK优化</span>
+                    </div>
+                </div>
+
+                <!-- 镭雕图案识别模型 -->
+                <div class="model-card" onclick="switchSection('section-model-detail', 'YOLOv5s')">
+                    <div class="model-card-image">🔍</div>
+                    <div class="model-card-title">镭雕图案识别模型</div>
+                    <div class="model-card-desc">
+                        onepoint事业部训练的镭雕图案识别模型，高精度低延迟
+                    </div>
+                    <div class="model-card-info">
+                        <span>发布时间: 2025-04-15</span>
+                        <span class="tag">高精度</span>
+                    </div>
+                </div>
+
+                <!-- PCB缺陷检测模型 -->
+                <div class="model-card" onclick="switchSection('section-model-detail', 'YOLOv5s')">
+                    <div class="model-card-image">🔍</div>
+                    <div class="model-card-title">PCB缺陷检测模型</div>
+                    <div class="model-card-desc">
+                        用于电子制造业的PCB板缺陷检测，支持多种缺陷类型
+                    </div>
+                    <div class="model-card-info">
+                        <span>发布时间: 2025-04-10</span>
+                        <span class="tag">轻量级</span>
+                    </div>
+                </div>
+
+                <!-- 工业零件检测模型 -->
+                <div class="model-card" onclick="switchSection('section-model-detail', 'YOLOv5s')">
+                    <div class="model-card-image">🔍</div>
+                    <div class="model-card-title">工业零件检测模型</div>
+                    <div class="model-card-desc">
+                        通用工业零件检测模型，支持20+种常见工业零件
+                    </div>
+                    <div class="model-card-info">
+                        <span>发布时间: 2025-04-05</span>
+                        <span class="tag">实时性</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 模型详情 Section -->
+        <section id="section-model-detail" class="section">
+            <div class="model-detail-header">
+                模型应用视频/图片展示区
+            </div>
+
+            <div class="model-detail-content">
+                <div class="model-detail-title">YOLOv5s 目标检测模型</div>
+                <div class="model-detail-tags">
+                    <span class="tag">目标检测</span>
+                    <span class="tag">轻量级</span>
+                    <span class="tag">实时性</span>
+                </div>
+
+                <div class="model-detail-section">
+                    <div class="model-detail-section-title">性能参数</div>
+                    <div class="model-detail-metrics">
+                        <div class="model-detail-metric">
+                            <div class="model-detail-metric-value">20ms</div>
+                            <div class="model-detail-metric-label">推理时间</div>
+                        </div>
+                        <div class="model-detail-metric">
+                            <div class="model-detail-metric-value">45MB</div>
+                            <div class="model-detail-metric-label">内存占用</div>
+                        </div>
+                        <div class="model-detail-metric">
+                            <div class="model-detail-metric-value">96%</div>
+                            <div class="model-detail-metric-label">检测精度</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="model-detail-section">
+                    <div class="model-detail-section-title">模型描述</div>
+                    <p>
+                        YOLOv5s是一款轻量级目标检测模型，适用于实时目标检测场景，平衡速度和精度，特别优化适配MTK芯片组。该模型能够同时检测多个目标类别，并提供边界框坐标和置信度分数。
+                    </p>
+                </div>
+
+                <div class="model-detail-section">
+                    <div class="model-detail-section-title">应用场景</div>
+                    <ul>
+                        <li>工业产品质检</li>
+                        <li>安防监控</li>
+                        <li>移动设备实时检测</li>
+                        <li>自动驾驶辅助系统</li>
+                    </ul>
+                </div>
+
+                <div class="model-detail-section">
+                    <div class="model-detail-section-title">兼容设备</div>
+                    <div class="home-card-tags">
+                        <span class="tag">MTK 9300</span>
+                        <span class="tag">MTK H0871</span>
+                        <span class="tag">高通骁龙8系列</span>
+                        <span class="tag">其他支持NNAPI的设备</span>
+                    </div>
+                </div>
+
+                <div class="model-detail-section">
+                    <div class="model-detail-section-title">发布信息</div>
+                    <p>发布日期: 2025-04-15</p>
+                    <p>版本: v1.2.3</p>
+                </div>
+
+                <div class="btn-container">
+                    <button class="btn" onclick="switchSection('section-test')">开始测试</button>
+                    <button class="btn secondary" onclick="switchSection('section-training')">前往训练</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 训练管理 Section -->
+        <section id="section-training" class="section">
+            <div class="card">
+                <div class="card-title">训推一体训练流程</div>
+                <div class="card-content">
+                    <div class="mb-16">
+                        <h3>训练流程说明</h3>
+                        <p>XCNN训推一体平台支持在PC端进行模型训练，训练完成后可通过以下方式将模型导入到安卓端：</p>
+                        <ol>
+                            <li>在PC端完成模型训练</li>
+                            <li>选择导出模型（支持多种格式）</li>
+                            <li>通过局域网同步或文件包导入到安卓端</li>
+                            <li>在安卓端进行模型测试和应用</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">模型导入选项</div>
+                <div class="card-content">
+                    <div class="training-options">
+                        <div class="training-option">
+                            <div class="training-option-icon">📱</div>
+                            <div class="training-option-title">局域网同步</div>
+                            <div class="training-option-desc">
+                                通过局域网将PC端训练好的模型直接同步到安卓设备
+                            </div>
+                            <button class="btn">开始同步</button>
+                        </div>
+                        <div class="training-option">
+                            <div class="training-option-icon">📦</div>
+                            <div class="training-option-title">文件包导入</div>
+                            <div class="training-option-desc">
+                                导入已下载到设备的模型文件包（.xcnn格式）
+                            </div>
+                            <button class="btn">选择文件</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-16">
+                <button class="btn" onclick="switchSection('section-test')">应用并测试当前效果</button>
+            </div>
+        </section>
+
+        <!-- 大模型对话 Section -->
+        <section id="section-chat" class="section">
+            <div class="chat-container">
+                <div class="chat-sidebar">
+                    <h3 class="mb-16">历史对话</h3>
+                    <div class="chat-history-item">
+                        <div class="chat-history-time">2025-04-20 14:30</div>
+                        <div class="chat-history-title">图像处理问题</div>
+                    </div>
+                    <div class="chat-history-item">
+                        <div class="chat-history-time">2025-04-19 10:15</div>
+                        <div class="chat-history-title">模型转换帮助</div>
+                    </div>
+                </div>
+
+                <div class="chat-main">
+                    <div class="chat-header">
+                        <div class="chat-model-info">当前模型: QWen2.5-7B</div>
+                        <button class="btn secondary">切换模型</button>
+                    </div>
+
+                    <div class="chat-messages">
+                        <div class="chat-message user">
+                            <div class="chat-message-content">
+                                请介绍一下XCNN框架的主要特点和优势。
+                            </div>
+                            <div class="chat-message-time">14:35</div>
+                        </div>
+
+                        <div class="chat-message bot">
+                            <div class="chat-message-content">
+                                XCNN是一个高性能的神经网络推理框架，专为移动设备和嵌入式系统优化。其主要特点和优势包括：<br><br>
+                                1. 高效推理：针对MTK和高通芯片组进行了深度优化，推理速度比通用框架提升30%以上<br><br>
+                                2. 低内存占用：创新的内存管理机制，减少50%运行时内存需求<br><br>
+                                3. 广泛兼容性：支持多种模型格式转换，包括TensorFlow、PyTorch、ONNX等<br><br>
+                                4. 训推一体：独特的训练-推理协同优化平台，简化模型部署流程<br><br>
+                                5. 丰富算子：提供200+种优化算子，覆盖各类AI应用场景
+                            </div>
+                            <div class="chat-message-time">14:36</div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input">
+                        <input type="text" placeholder="输入问题...">
+                        <button>➤</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 产品反馈 Section -->
+        <section id="section-feedback" class="section">
+            <div class="tabs">
+                <div class="tab active">需求池</div>
+                <div class="tab">bug反馈</div>
+                <div class="tab">功能迭代清单</div>
+            </div>
+
+            <div class="feedback-container">
+                <div class="feedback-table-container">
+                    <table class="feedback-table">
+                        <thead>
+                            <tr>
+                                <th>需求ID</th>
+                                <th>标题</th>
+                                <th>类型</th>
+                                <th>优先级</th>
+                                <th>状态</th>
+                                <th>计划版本</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>REQ-001</td>
+                                <td>支持更多目标检测模型</td>
+                                <td>功能</td>
+                                <td>高</td>
+                                <td>已计划</td>
+                                <td>v2.6</td>
+                            </tr>
+                            <tr>
+                                <td>REQ-002</td>
+                                <td>优化模型量化流程</td>
+                                <td>性能</td>
+                                <td>中</td>
+                                <td>开发中</td>
+                                <td>v2.5</td>
+                            </tr>
+                            <tr>
+                                <td>REQ-003</td>
+                                <td>增加批量测试功能</td>
+                                <td>功能</td>
+                                <td>中</td>
+                                <td>已完成</td>
+                                <td>v2.4</td>
+                            </tr>
+                            <tr>
+                                <td>REQ-004</td>
+                                <td>支持更多芯片平台</td>
+                                <td>兼容性</td>
+                                <td>高</td>
+                                <td>规划中</td>
+                                <td>v3.0</td>
+                            </tr>
+                            <tr>
+                                <td>REQ-005</td>
+                                <td>改进模型导出格式</td>
+                                <td>功能</td>
+                                <td>低</td>
+                                <td>待评估</td>
+                                <td>未定</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="mb-16">需求提交统计</h3>
+                <div class="feedback-chart">
+                    需求池统计图表
+                </div>
+            </div>
+        </section>
+
+        <!-- 测试页面 Section -->
+        <section id="section-test" class="section">
+            <div class="test-container">
+                <div class="test-preview">
+                    预览区域
+                </div>
+
+                <div class="test-controls">
+                    <div class="test-section">
+                        <div class="test-section-title">模型状态</div>
+                        <div class="test-status info">
+                            <div class="test-status-icon">🖼️</div>
+                            <div>同步训推一体</div>
+                        </div>
+                        <div class="test-status warning">
+                            <div class="test-status-icon">⏳</div>
+                            <div>模型训练中</div>
+                        </div>
+                        <div class="test-status info">
+                            <div class="test-status-icon">📥</div>
+                            <div>模型导入中</div>
+                        </div>
+                        <div class="test-status success">
+                            <div class="test-status-icon">✅</div>
+                            <div>模型导入完成</div>
+                        </div>
+                    </div>
+
+                    <div class="test-section">
+                        <div class="test-section-title">操作</div>
+                        <button class="btn mb-16" style="width: 100%;">开始测试</button>
+                        <button class="btn secondary mb-16" style="width: 100%;">发布至模型市场</button>
+                        <button class="btn secondary" style="width: 100%; background-color: #faad14; color: white;">继续导入训推一体进行训练</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchSection('section-home')">
+            <div class="icon">🏠</div>
+            <div>首页</div>
+        </div>
+        <div class="nav-item" onclick="switchSection('section-test')">
+            <div class="icon">🧪</div>
+            <div>测试</div>
+        </div>
+    </div>
+
+    <script>
+        // 当前活跃的section
+        let currentSection = 'section-home';
+        // 导航历史
+        const navigationHistory = [];
+        // 当前分类和模型
+        let currentCategory = '目标检测';
+        let currentModel = 'YOLOv5s';
+
+        // 切换section
+        function switchSection(sectionId, param) {
+            // 保存当前section到历史
+            if (currentSection !== sectionId) {
+                 navigationHistory.push(currentSection);
+            }
+            
+            // 隐藏所有section
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // 显示目标section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                currentSection = sectionId;
+                // 滚动到顶部
+                document.querySelector('.main-content').scrollTop = 0;
+            } else {
+                console.error('Section not found:', sectionId);
+                // 如果目标section不存在，回退到首页
+                switchSection('section-home');
+                return;
+            }
+            
+            // 更新底部导航状态
+            updateBottomNav(sectionId);
+            
+            // 更新页面标题
+            updatePageTitle(sectionId);
+            
+            // 处理特定参数
+            if (param) {
+                handleSectionParams(sectionId, param);
+            }
+        }
+        
+        // 更新底部导航状态
+        function updateBottomNav(sectionId) {
+            const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            if (sectionId === 'section-home') {
+                navItems[0].classList.add('active');
+            } else if (sectionId === 'section-test') {
+                navItems[1].classList.add('active');
+            } else {
+                 // 如果当前页面不是首页或测试页，检查历史记录决定底部导航状态
+                 // 这是一个简化的逻辑，可能需要根据实际应用流程调整
+                 if (navigationHistory.includes('section-test')) {
+                     navItems[1].classList.add('active');
+                 } else {
+                     navItems[0].classList.add('active');
+                 }
+            }
+        }
+        
+        // 更新页面标题
+        function updatePageTitle(sectionId) {
+            const titleElement = document.getElementById('page-title');
+            const backButton = document.getElementById('back-button');
+            switch(sectionId) {
+                case 'section-home':
+                    titleElement.textContent = 'XCNN开发者平台';
+                    backButton.style.visibility = 'hidden';
+                    break;
+                case 'section-model-market':
+                    titleElement.textContent = '模型市场';
+                    backButton.style.visibility = 'visible';
+                    break;
+                case 'section-model-category':
+                    titleElement.textContent = '模型分类';
+                    backButton.style.visibility = 'visible';
+                    break;
+                case 'section-model-detail':
+                    titleElement.textContent = '模型详情';
+                    backButton.style.visibility = 'visible';
+                    break;
+                case 'section-training':
+                    titleElement.textContent = '训练管理';
+                    backButton.style.visibility = 'visible';
+                    break;
+                case 'section-chat':
+                    titleElement.textContent = '大模型对话';
+                    backButton.style.visibility = 'visible';
+                    break;
+                case 'section-feedback':
+                    titleElement.textContent = '产品反馈';
+                    backButton.style.visibility = 'visible';
+                    break;
+                case 'section-test':
+                    titleElement.textContent = '模型测试';
+                    backButton.style.visibility = 'visible';
+                    break;
+                default:
+                    titleElement.textContent = 'XCNN开发者平台';
+                    backButton.style.visibility = 'hidden';
+            }
+        }
+        
+        // 处理section特定参数
+        function handleSectionParams(sectionId, param) {
+            if (sectionId === 'section-model-category') {
+                currentCategory = param;
+                document.getElementById('category-title').textContent = param + '模型';
+                // TODO: 根据分类加载模型列表
+            } else if (sectionId === 'section-model-detail') {
+                currentModel = param;
+                // TODO: 根据模型ID加载具体模型数据
+            }
+        }
+        
+        // 返回按钮处理
+        document.getElementById('back-button').addEventListener('click', function() {
+            if (navigationHistory.length > 0) {
+                const previousSection = navigationHistory.pop();
+                
+                // 隐藏所有section
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // 显示上一个section
+                const prevSectionElement = document.getElementById(previousSection);
+                 if (prevSectionElement) {
+                    prevSectionElement.classList.add('active');
+                    currentSection = previousSection;
+                    // 滚动到顶部
+                    document.querySelector('.main-content').scrollTop = 0;
+                } else {
+                    console.error('Previous section not found:', previousSection);
+                    // 如果历史记录中的section无效，则返回首页
+                    switchSection('section-home');
+                    return;
+                }
+                
+                // 更新底部导航状态
+                updateBottomNav(previousSection);
+                
+                // 更新页面标题
+                updatePageTitle(previousSection);
+            } else {
+                // 如果没有历史记录，默认返回首页
+                switchSection('section-home');
+            }
+        });
+        
+        // 标签切换
+        document.querySelectorAll('.tab').forEach((tab, index) => {
+            tab.addEventListener('click', function() {
+                // 更新标签状态
+                document.querySelectorAll('.tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                this.classList.add('active');
+                // TODO: 根据标签加载对应内容
+            });
+        });
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            switchSection('section-home'); // 默认显示首页
+        });
+
+    </script>
+</body>
+</html>
