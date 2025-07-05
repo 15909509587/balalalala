@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工业视觉大模型智能平台原型</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #343a40;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,.05);
+        }
+        .header .logo {
+            display: flex;
+            align-items: center;
+        }
+        .header .logo .icon {
+            background-color: #007bff;
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+        .header .logo h1 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .header .logo p {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin: 0;
+        }
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .nav-tab {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            background-color: #f0f2f5;
+            color: #495057;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .nav-tab.active {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+        .nav-tab:hover:not(.active) {
+            background-color: #e2e6ea;
+        }
+        .main-content {
+            display: flex;
+            flex: 1;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            gap: 1rem;
+        }
+        .page {
+            display: none;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+            padding: 1.5rem;
+            box-sizing: border-box;
+        }
+        .page.active {
+            display: flex;
+        }
+
+        /* Page 1: Task Creation Page */
+        .task-creation-page {
+            display: flex;
+            width: 100%;
+            gap: 1rem;
+        }
+        .task-creation-page .panel {
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            border: 1px solid #e9ecef;
+            padding: 1rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        .task-creation-page .left-panel {
+            width: 40%;
+        }
+        .task-creation-page .middle-panel {
+            width: 40%;
+        }
+        .task-creation-page .right-panel {
+            width: 20%;
+        }
+        .chat-area {
+            flex: 1;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            background-color: #f8f9fa;
+        }
+        .chat-message {
+            display: flex;
+            margin-bottom: 0.75rem;
+        }
+        .chat-message.user {
+            justify-content: flex-end;
+        }
+        .chat-message.system {
+            justify-content: flex-start;
+        }
+        .message-bubble {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+        .message-bubble.user {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+        .message-bubble.system {
+            background-color: #e9ecef;
+            color: #343a40;
+            border: 1px solid #dee2e6;
+        }
+        .message-time {
+            font-size: 0.65rem;
+            margin-top: 0.25rem;
+            color: #6c757d;
+            text-align: right;
+        }
+        .chat-message.user .message-time {
+            color: rgba(255,255,255,0.7);
+        }
+        .chat-input-area {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .chat-input-area button {
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        .image-upload-area {
+            height: 200px;
+            border: 2px dashed #ced4da;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #6c757d;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        .image-upload-area:hover {
+            border-color: #007bff;
+        }
+        .image-preview {
+            height: 200px;
+            border: 1px solid #ced4da;
+            border-radius: 0.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .template-card {
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .template-card:hover {
+            background-color: #f8f9fa;
+            border-color: #007bff;
+        }
+        .template-card.selected {
+            background-color: #e0f2ff;
+            border-color: #007bff;
+        }
+        .template-card h4 {
+            margin: 0 0 0.25rem 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .template-card p {
+            margin: 0;
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+        .button-group button {
+            background-color: #6c757d;
+            color: #ffffff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+        }
+        .button-group button:hover {
+            background-color: #5a6268;
+        }
+        .generate-button {
+            background-color: #28a745;
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .generate-button:hover {
+            background-color: #218838;
+        }
+
+        /* Page 2: Code Generation Page */
+        .code-generation-page {
+            display: flex;
+            width: 100%;
+            gap: 1rem;
+        }
+        .code-generation-page .left-panel {
+            width: 20%;
+        }
+        .code-generation-page .middle-panel {
+            width: 60%;
+        }
+        .code-generation-page .right-panel {
+            width: 20%;
+        }
+        .code-editor {
+            flex: 1;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            overflow: auto;
+            background-color: #f8f9fa;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .flowchart-area {
+            flex: 1;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow: auto;
+            background-color: #f8f9fa;
+            position: relative;
+        }
+        .flowchart-node {
+            background-color: #007bff;
+            color: #ffffff;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            position: absolute;
+            text-align: center;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .flowchart-arrow {
+            position: absolute;
+            background-color: #007bff;
+            height: 2px;
+            transform-origin: 0 0;
+        }
+        .flowchart-arrow::after {
+            content: ">\00a0";
+            position: absolute;
+            right: -8px;
+            top: -7px;
+            color: #007bff;
+            font-size: 1.2rem;
+        }
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+        .tab-buttons button {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ced4da;
+            border-bottom: none;
+            background-color: #e9ecef;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .tab-buttons button:first-child {
+            border-top-left-radius: 0.5rem;
+        }
+        .tab-buttons button:last-child {
+            border-top-right-radius: 0.5rem;
+        }
+        .tab-buttons button.active {
+            background-color: #ffffff;
+            border-bottom: 1px solid #ffffff;
+            color: #007bff;
+        }
+        .param-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+        .param-slider {
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        /* Page 3: Validation Page */
+        .validation-page {
+            display: flex;
+            width: 100%;
+            gap: 1rem;
+        }
+        .validation-page .left-panel {
+            width: 70%;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .validation-page .right-panel {
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+        }
+        .image-display-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            flex: 1;
+        }
+        .image-card {
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .image-placeholder {
+            background-color: #f8f9fa;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #6c757d;
+            border-radius: 0.25rem;
+            margin-top: 0.5rem;
+        }
+        .stats-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+        .stat-card {
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        .stat-card h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+        .feedback-stars span {
+            color: #ffc107;
+            font-size: 1.2rem;
+        }
+        .suggestion-card {
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .suggestion-card:hover {
+            background-color: #f8f9fa;
+        }
+        .suggestion-card h5 {
+            margin: 0 0 0.25rem 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .suggestion-card p {
+            margin: 0;
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+        .run-button {
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+        .run-button:hover {
+            background-color: #0056b3;
+        }
+        .run-button.running {
+            background-color: #ffc107;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255,193,7, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255,193,7, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,193,7, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="icon">🧠</div>
+            <div>
+                <h1>工业视觉大模型</h1>
+                <p>智能算子生成平台</p>
+            </div>
+        </div>
+        <div class="nav-tabs">
+            <a href="#task-creation" class="nav-tab active" data-page="task-creation">
+                <span>智能任务创建</span>
+                <span style="font-size: 0.7rem; opacity: 0.8;">描述需求，上传图像</span>
+            </a>
+            <a href="#code-generation" class="nav-tab" data-page="code-generation">
+                <span>代码生成</span>
+                <span style="font-size: 0.7rem; opacity: 0.8;">生成算子组合</span>
+            </a>
+            <a href="#validation" class="nav-tab" data-page="validation">
+                <span>实时验证</span>
+                <span style="font-size: 0.7rem; opacity: 0.8;">测试和调优</span>
+            </a>
+        </div>
+        <div>
+            <button style="background-color: #6c757d; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; margin-right: 0.5rem;">保存项目</button>
+            <button style="background-color: #007bff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">导出代码</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- Page 1: Task Creation Page -->
+        <div id="task-creation-page" class="page active">
+            <div class="task-creation-page">
+                <div class="panel right-panel">
+                    <h3>模板库</h3>
+                    <input type="text" placeholder="搜索模板..." style="width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 0.5rem; margin-bottom: 1rem;">
+                    <div class="template-list">
+                        <div class="template-card" data-template-id="1">
+                            <h4>金属划伤检测</h4>
+                            <p>检测金属表面的划痕、刮伤等缺陷</p>
+                        </div>
+                        <div class="template-card" data-template-id="2">
+                            <h4>尺寸测量</h4>
+                            <p>精确测量零件的长度、宽度、直径等尺寸</p>
+                        </div>
+                        <div class="template-card" data-template-id="3">
+                            <h4>表面质量检测</h4>
+                            <p>检测表面粗糙度、色差、污渍等质量问题</p>
+                        </div>
+                        <div class="template-card" data-template-id="4">
+                            <h4>零件定位</h4>
+                            <p>精确定位零件位置和角度</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel middle-panel">
+                    <h3>图像操作区</h3>
+                    <div class="image-upload-area" id="image-upload-area">
+                        <span>点击上传图像或拖拽文件到此处</span>
+                        <span style="font-size: 0.8rem; color: #999;">支持 JPG、PNG、BMP 格式</span>
+                        <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
+                    </div>
+                    <div class="image-preview" id="image-preview" style="display: none;">
+                        <img src="" alt="Uploaded Image">
+                    </div>
+                    <div class="button-group">
+                        <button>矩形选择</button>
+                        <button>多边形</button>
+                        <button>清除标注</button>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <h4>图像信息</h4>
+                        <p style="font-size: 0.85rem; color: #6c757d;">分辨率: 1920×1080</p>
+                        <p style="font-size: 0.85rem; color: #6c757d;">格式: JPEG</p>
+                        <p style="font-size: 0.85rem; color: #6c757d;">大小: 2.3 MB</p>
+                    </div>
+                </div>
+                <div class="panel left-panel">
+                    <h3>任务描述区</h3>
+                    <div class="chat-area" id="chat-area">
+                        <div class="chat-message system">
+                            <div class="message-bubble">您好！我是工业视觉AI助手。请描述您的检测需求，我将为您生成相应的视觉算子组合。</div>
+                            <div class="message-time">2:19 PM</div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="描述您的检测需求...">
+                        <button id="send-chat-btn">发送</button>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <h4>参数预设</h4>
+                        <p style="font-size: 0.85rem; color: #6c757d;">输出语言:</p>
+                        <div class="button-group">
+                            <button>Halcon</button>
+                            <button>Python</button>
+                            <button>C++</button>
+                        </div>
+                        <p style="font-size: 0.85rem; color: #6c757d; margin-top: 0.5rem;">硬件约束:</p>
+                        <input type="checkbox" id="embedded-device">
+                        <label for="embedded-device" style="font-size: 0.85rem;">嵌入式设备</label>
+                    </div>
+                    <button class="generate-button" id="generate-code-btn">生成算子组合</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: Code Generation Page -->
+        <div id="code-generation-page" class="page">
+            <div class="code-generation-page">
+                <div class="panel left-panel">
+                    <h3>算子库</h3>
+                    <input type="text" placeholder="搜索算子..." style="width: 100%; padding: 0.5rem; border: 1px solid #ced4da; border-radius: 0.5rem; margin-bottom: 1rem;">
+                    <div class="operator-category">
+                        <h4>图像预处理</h4>
+                        <p style="font-size: 0.85rem; color: #6c757d;">read_image</p>
+                        <p style="font-size: 0.85rem; color: #6c757d;">rgb1_to_gray</p>
+                        <p style="font-size: 0.85rem; color: #6c757d;">median_image</p>
+                    </div>
+                    <div class="operator-category" style="margin-top: 1rem;">
+                        <h4>特征提取</h4>
+                        <p style="font-size: 0.85rem; color: #6c757d;">threshold</p>
+                        <p style="font-size: 0.85rem; color: #6c757d;">edges_sub_pix</p>
+                        <p style="font-size: 0.85rem; color: #6c757d;">connection</p>
+                    </div>
+                </div>
+                <div class="panel middle-panel">
+                    <h3>代码生成结果</h3>
+                    <div class="tab-buttons">
+                        <button id="flowchart-tab" class="active">流程图模式</button>
+                        <button id="code-tab">代码编辑模式</button>
+                    </div>
+                    <div id="flowchart-area" class="flowchart-area">
+                        <div class="flowchart-node" style="left: 50px; top: 50px;">read_image</div>
+                        <div class="flowchart-node" style="left: 200px; top: 50px;">rgb1_to_gray</div>
+                        <div class="flowchart-node" style="left: 350px; top: 50px;">median_image</div>
+                        <div class="flowchart-node" style="left: 500px; top: 50px;">threshold</div>
+                        <div class="flowchart-arrow" style="left: 120px; top: 60px; width: 80px;"></div>
+                        <div class="flowchart-arrow" style="left: 270px; top: 60px; width: 80px;"></div>
+                        <div class="flowchart-arrow" style="left: 420px; top: 60px; width: 80px;"></div>
+                    </div>
+                    <textarea id="code-editor" class="code-editor" style="display: none;">
+* 工业视觉检测算法 - 自动生成
+* 任务描述: 金属表面划伤检测
+* 生成时间: 2025/06/29
+
+* 读取输入图像
+read_image (Image, 'input.jpg')
+
+* 转换为灰度图像
+rgb1_to_gray (Image, GrayImage)
+
+* 中值滤波去噪
+median_image (GrayImage, FilteredImage, 'circle', 3)
+
+* 阈值分割
+threshold (FilteredImage, Region, 0, 128)
+
+* 连通域分析
+connection (Region, ConnectedRegions)
+
+* 形状筛选 - 面积过滤
+select_shape (ConnectedRegions, SelectedRegions, 'area', 'and', 100, 10000)
+
+* 计算缺陷特征
+area_center (SelectedRegions, Area, Row, Column)
+smallest_rectangle2 (SelectedRegions, Row1, Column1, Row2, Column2, Phi)
+
+* 输出结果
+count_obj (SelectedRegions, Number)
+if (Number > 0)
+    disp_message (WindowHandle, '检测到 ' + Number + ' 个缺陷', 'window', 12, 12, 'black', 'true')
+else
+    disp_message (WindowHandle, '产品合格', 'window', 12, 12, 'green', 'true')
+endif
+                    </textarea>
+                    <button class="generate-button" style="background-color: #007bff;" id="run-validation-btn">运行验证</button>
+                </div>
+                <div class="panel right-panel">
+                    <h3>参数面板</h3>
+                    <div>
+                        <label style="font-size: 0.85rem;">置信度阈值:</label>
+                        <input type="range" min="0" max="100" value="80" class="param-slider">
+                        <p style="font-size: 0.75rem; text-align: center;">80%</p>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <label style="font-size: 0.85rem;">检测灵敏度:</label>
+                        <input type="range" min="1" max="10" value="5" class="param-slider">
+                        <p style="font-size: 0.75rem; text-align: center;">中等</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 3: Validation Page -->
+        <div id="validation-page" class="page">
+            <div class="validation-page">
+                <div class="left-panel">
+                    <h3>实时验证沙盒</h3>
+                    <div class="image-display-area">
+                        <div class="image-card">
+                            <h4>原始图像</h4>
+                            <div class="image-placeholder">原始图像预览</div>
+                        </div>
+                        <div class="image-card">
+                            <h4>检测结果</h4>
+                            <div class="image-placeholder">检测结果预览</div>
+                        </div>
+                    </div>
+                    <div class="stats-area">
+                        <div class="stat-card">
+                            <h4>性能统计</h4>
+                            <div class="stat-item"><span>处理时间:</span><span>120ms</span></div>
+                            <div class="stat-item"><span>内存使用:</span><span>45MB</span></div>
+                            <div class="stat-item"><span>准确率:</span><span style="color: #28a745;">94.2%</span></div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>检测详情</h4>
+                            <p style="font-size: 0.85rem; color: #6c757d;">点击检测区域查看详情</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>结果反馈</h4>
+                            <div class="feedback-stars">
+                                <span>★</span><span>★</span><span>★</span><span>★</span><span>☆</span>
+                            </div>
+                            <div style="margin-top: 0.5rem;">
+                                <input type="checkbox" id="feedback-misdetection">
+                                <label for="feedback-misdetection" style="font-size: 0.85rem;">误检</label>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="feedback-omission">
+                                <label for="feedback-omission" style="font-size: 0.85rem;">漏检</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="run-button" id="run-validation-page-btn">运行验证</button>
+                </div>
+                <div class="right-panel">
+                    <h3>智能调优</h3>
+                    <div class="chat-area" id="validation-chat-area">
+                        <div class="chat-message system">
+                            <div class="message-bubble">验证环境已准备就绪。点击"运行验证"开始测试算法效果。</div>
+                            <div class="message-time">2:20 PM</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <h4>智能建议</h4>
+                        <div class="suggestion-card" data-suggestion-id="1">
+                            <h5>提高灵敏度</h5>
+                            <p>降低阈值以检测更小的缺陷</p>
+                        </div>
+                        <div class="suggestion-card" data-suggestion-id="2">
+                            <h5>降低误报率</h5>
+                            <p>增加形态学滤波减少噪声</p>
+                        </div>
+                        <div class="suggestion-card" data-suggestion-id="3">
+                            <h5>优化光照处理</h5>
+                            <p>添加同态滤波处理不均匀光照</p>
+                        </div>
+                    </div>
+                    <div class="chat-input-area" style="margin-top: 1rem;">
+                        <input type="text" id="validation-chat-input" placeholder="描述优化需求...">
+                        <button id="send-validation-chat-btn">发送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const navTabs = document.querySelectorAll(".nav-tab");
+            const pages = document.querySelectorAll(".page");
+
+            navTabs.forEach(tab => {
+                tab.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    const targetPageId = tab.dataset.page + "-page";
+
+                    navTabs.forEach(t => t.classList.remove("active"));
+                    tab.classList.add("active");
+
+                    pages.forEach(p => p.classList.remove("active"));
+                    document.getElementById(targetPageId).classList.add("active");
+                });
+            });
+
+            // Page 1: Task Creation Page Logic
+            const chatArea = document.getElementById("chat-area");
+            const chatInput = document.getElementById("chat-input");
+            const sendChatBtn = document.getElementById("send-chat-btn");
+            const imageUploadArea = document.getElementById("image-upload-area");
+            const imageUploadInput = document.getElementById("image-upload-input");
+            const imagePreview = document.getElementById("image-preview");
+            const templateCards = document.querySelectorAll(".template-card");
+            const generateCodeBtn = document.getElementById("generate-code-btn");
+
+            sendChatBtn.addEventListener("click", () => {
+                sendMessage(chatInput.value, chatArea);
+                chatInput.value = "";
+            });
+
+            chatInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    sendMessage(chatInput.value, chatArea);
+                    chatInput.value = "";
+                }
+            });
+
+            function sendMessage(message, area) {
+                if (!message.trim()) return;
+
+                const userMessageDiv = document.createElement("div");
+                userMessageDiv.classList.add("chat-message", "user");
+                userMessageDiv.innerHTML = `
+                    <div class="message-bubble">${message}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                `;
+                area.appendChild(userMessageDiv);
+                area.scrollTop = area.scrollHeight;
+
+                // Simulate AI response
+                setTimeout(() => {
+                    const aiResponse = generateAIResponse(message);
+                    const systemMessageDiv = document.createElement("div");
+                    systemMessageDiv.classList.add("chat-message", "system");
+                    systemMessageDiv.innerHTML = `
+                        <div class="message-bubble">${aiResponse}</div>
+                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                    `;
+                    area.appendChild(systemMessageDiv);
+                    area.scrollTop = area.scrollHeight;
+                }, 1000);
+            }
+
+            function generateAIResponse(message) {
+                if (message.includes("划伤") || message.includes("缺陷")) {
+                    return "我理解您需要检测划伤缺陷。请问：1) 最小检测尺寸是多少？2) 是否需要忽略某些区域（如反光区域）？3) 对检测精度有什么要求？";
+                } else if (message.includes("尺寸") || message.includes("测量")) {
+                    return "明白了，您需要进行尺寸测量。请告诉我：1) 需要测量哪些尺寸（长度/宽度/直径）？2) 精度要求是多少？3) 测量单位是什么？";
+                } else {
+                    return "请提供更多详细信息，比如检测对象、精度要求、特殊条件等，这样我能为您生成更准确的算子组合。";
+                }
+            }
+
+            imageUploadArea.addEventListener("click", () => {
+                imageUploadInput.click();
+            });
+
+            imageUploadInput.addEventListener("change", (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imagePreview.querySelector("img").src = e.target.result;
+                        imagePreview.style.display = "flex";
+                        imageUploadArea.style.display = "none";
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            templateCards.forEach(card => {
+                card.addEventListener("click", () => {
+                    templateCards.forEach(c => c.classList.remove("selected"));
+                    card.classList.add("selected");
+                    const templateTitle = card.querySelector("h4").textContent;
+                    const templateDesc = card.querySelector("p").textContent;
+                    sendMessage(`我想使用"${templateTitle}"模板`, chatArea);
+                    setTimeout(() => {
+                        const aiResponse = `已选择"${templateTitle}"模板。${templateDesc}。请上传相关图像并描述具体需求。`;
+                        const systemMessageDiv = document.createElement("div");
+                        systemMessageDiv.classList.add("chat-message", "system");
+                        systemMessageDiv.innerHTML = `
+                            <div class="message-bubble">${aiResponse}</div>
+                            <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                        `;
+                        chatArea.appendChild(systemMessageDiv);
+                        chatArea.scrollTop = chatArea.scrollHeight;
+                    }, 500);
+                });
+            });
+
+            generateCodeBtn.addEventListener("click", () => {
+                document.querySelector("[data-page=\"code-generation\"]").click();
+            });
+
+            // Page 2: Code Generation Page Logic
+            const flowchartTab = document.getElementById("flowchart-tab");
+            const codeTab = document.getElementById("code-tab");
+            const flowchartArea = document.getElementById("flowchart-area");
+            const codeEditor = document.getElementById("code-editor");
+            const runValidationBtn = document.getElementById("run-validation-btn");
+
+            flowchartTab.addEventListener("click", () => {
+                flowchartTab.classList.add("active");
+                codeTab.classList.remove("active");
+                flowchartArea.style.display = "block";
+                codeEditor.style.display = "none";
+            });
+
+            codeTab.addEventListener("click", () => {
+                codeTab.classList.add("active");
+                flowchartTab.classList.remove("active");
+                flowchartArea.style.display = "none";
+                codeEditor.style.display = "block";
+            });
+
+            runValidationBtn.addEventListener("click", () => {
+                document.querySelector("[data-page=\"validation\"]").click();
+            });
+
+            // Page 3: Validation Page Logic
+            const validationChatArea = document.getElementById("validation-chat-area");
+            const validationChatInput = document.getElementById("validation-chat-input");
+            const sendValidationChatBtn = document.getElementById("send-validation-chat-btn");
+            const runValidationPageBtn = document.getElementById("run-validation-page-btn");
+            const suggestionCards = document.querySelectorAll(".suggestion-card");
+
+            sendValidationChatBtn.addEventListener("click", () => {
+                sendMessage(validationChatInput.value, validationChatArea);
+                validationChatInput.value = "";
+            });
+
+            validationChatInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    sendMessage(validationChatInput.value, validationChatArea);
+                    validationChatInput.value = "";
+                }
+            });
+
+            runValidationPageBtn.addEventListener("click", () => {
+                runValidationPageBtn.classList.add("running");
+                runValidationPageBtn.textContent = "运行中...";
+                setTimeout(() => {
+                    runValidationPageBtn.classList.remove("running");
+                    runValidationPageBtn.textContent = "运行验证";
+                    const systemMessage = {
+                        type: 'system',
+                        content: '检测完成！发现3个缺陷区域。处理时间120ms，准确率94.2%。您可以框选区域进行调优。',
+                        timestamp: new Date().toLocaleTimeString()
+                    };
+                    const systemMessageDiv = document.createElement("div");
+                    systemMessageDiv.classList.add("chat-message", "system");
+                    systemMessageDiv.innerHTML = `
+                        <div class="message-bubble">${systemMessage.content}</div>
+                        <div class="message-time">${systemMessage.timestamp}</div>
+                    `;
+                    validationChatArea.appendChild(systemMessageDiv);
+                    validationChatArea.scrollTop = validationChatArea.scrollHeight;
+                }, 3000);
+            });
+
+            suggestionCards.forEach(card => {
+                card.addEventListener("click", () => {
+                    const suggestionTitle = card.querySelector("h5").textContent;
+                    const suggestionDesc = card.querySelector("p").textContent;
+                    sendMessage(`应用建议: ${suggestionTitle} - ${suggestionDesc}`, validationChatArea);
+                    setTimeout(() => {
+                        const aiResponse = `已应用"${suggestionTitle}"优化，正在重新验证...`;
+                        const systemMessageDiv = document.createElement("div");
+                        systemMessageDiv.classList.add("chat-message", "system");
+                        systemMessageDiv.innerHTML = `
+                            <div class="message-bubble">${aiResponse}</div>
+                            <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                        `;
+                        validationChatArea.appendChild(systemMessageDiv);
+                        validationChatArea.scrollTop = validationChatArea.scrollHeight;
+                        runValidationPageBtn.click(); // Simulate re-running validation
+                    }, 500);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
+
